@@ -22,13 +22,13 @@ class PlayModeActivity : AppCompatActivity() {
         val backButton = findViewById<Button>(R.id.backButton1)
         val playerButton = findViewById<Button>(R.id.competitiveModeButton)
         backButton.setOnClickListener{
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            val i = Intent(this, MainActivity::class.java)
+            startActivity(i)
             finishAffinity()
         }
         playerButton.setOnClickListener{
-            val intent = Intent(this, NPlayersActivity::class.java)
-            startActivity(intent)
+            val i = Intent(this, NPlayersActivity::class.java)
+            startActivity(i)
             finishAffinity()
         }
     }

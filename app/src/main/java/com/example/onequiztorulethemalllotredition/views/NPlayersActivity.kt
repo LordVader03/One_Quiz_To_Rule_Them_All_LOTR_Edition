@@ -1,5 +1,6 @@
 package com.example.onequiztorulethemalllotredition.views
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -18,6 +19,8 @@ class NPlayersActivity : AppCompatActivity() {
     lateinit var moreButton: Button
     lateinit var nextButton: Button
     lateinit var nPlayers: TextView
+    var nPlayersPrev = 0
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -27,6 +30,10 @@ class NPlayersActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        val bundlePrev = intent.extras
+        if(bundlePrev != null) {
+            nPlayersPrev = bundlePrev.getInt("nPlayers")
+        }
         backButton = findViewById<Button>(R.id.backNPlayersButton)
         homeButton = findViewById<Button>(R.id.homeNPlayersButton)
         lessButton = findViewById<Button>(R.id.lessNPlayersButton)
@@ -35,14 +42,29 @@ class NPlayersActivity : AppCompatActivity() {
         nPlayers = findViewById<TextView>(R.id.nPlayersText)
         lessButton.visibility = View.INVISIBLE
         moreButton.visibility = View.VISIBLE
+        if(nPlayersPrev != 0){
+            lessButton.text = (nPlayersPrev - 1).toString()
+            nPlayers.text = nPlayersPrev.toString()
+            moreButton.text = (nPlayersPrev + 1).toString()
+            lessButton.visibility = if(nPlayersPrev >= 3){
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
+            moreButton.visibility = if(nPlayersPrev <= 3){
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
+        }
         backButton.setOnClickListener{
-            val intent = Intent(this, PlayModeActivity::class.java)
-            startActivity(intent)
+            val i = Intent(this, PlayModeActivity::class.java)
+            startActivity(i)
             finishAffinity()
         }
         homeButton.setOnClickListener{
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            val i = Intent(this, MainActivity::class.java)
+            startActivity(i)
             finishAffinity()
         }
         lessButton.setOnClickListener{
@@ -76,8 +98,12 @@ class NPlayersActivity : AppCompatActivity() {
             nPlayers.text = players.toString()
         }
         nextButton.setOnClickListener {
-            val intent = Intent(this, NameActivity::class.java)
-            startActivity(intent)
+            val i = Intent(this, NameActivity::class.java)
+            val bundle = Bundle()
+            bundle.putInt("nPlayers", nPlayers.text.toString().toInt())
+            bundle.putBoolean("direction", true)
+            i.putExtras(bundle)
+            startActivity(i)
             finishAffinity()
         }
     }

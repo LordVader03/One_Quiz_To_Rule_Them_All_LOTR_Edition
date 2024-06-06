@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">One Quiz To Rule Them All, LOTR Edition</string>
+    <string name="player_enunciate">Introduce the name for Player %1$d</string>
 </resources>
