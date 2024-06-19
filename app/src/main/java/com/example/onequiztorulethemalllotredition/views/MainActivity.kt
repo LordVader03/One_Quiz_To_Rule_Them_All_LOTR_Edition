@@ -21,7 +21,8 @@ class MainActivity : AppCompatActivity() {
         }
         val playButton = findViewById<Button>(R.id.playButton)
         playButton.setOnClickListener{
-            val i = Intent(this, PlayModeActivity::class.java)
+            //val i = Intent(this, PlayModeActivity::class.java)
+            val i = Intent(this, GameActivity::class.java)
             startActivity(i)
             finishAffinity()
         }
