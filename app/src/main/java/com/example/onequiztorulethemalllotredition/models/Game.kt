@@ -13,7 +13,7 @@ class Game {
     fun setQuestions(callback: () -> Unit) {
         db.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                var questionList = ArrayList<Question>()
+                val questionList = ArrayList<Question>()
                 for (idSnapshot in snapshot.children) {
                     val question = idSnapshot.child("Pregunta").getValue(String::class.java).toString()
                     val questionType = idSnapshot.child("Tipo").getValue(String::class.java).toString()

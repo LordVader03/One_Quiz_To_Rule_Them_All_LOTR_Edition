@@ -26,6 +26,10 @@ class GameActivity : AppCompatActivity() {
     private var score3 = 0
     private var scoreGlobal = 0
 
+    private var timeRemaining = 10
+    private lateinit var timerHandler: Handler
+    private lateinit var timerRunnable: Runnable
+
     private lateinit var questionText: TextView
     private lateinit var response1Button:Button
     private lateinit var response2Button:Button
@@ -88,7 +92,7 @@ class GameActivity : AppCompatActivity() {
         response4Button.text = question.answerList[3].answer
         val buttonColor = when (question.questionType) {
             "Movies" -> "#FF6400"
-            "Events" -> "#00FF00"
+            "Events" -> "#00C850"
             "Characters" -> "#0064FF"
             else -> null
         }
@@ -98,22 +102,29 @@ class GameActivity : AppCompatActivity() {
             response3Button.setBackgroundColor(Color.parseColor(buttonColor))
             response4Button.setBackgroundColor(Color.parseColor(buttonColor))
         }
+        timeRemaining = 10
+        startTimer()
+        updateTimerDisplay()
     }
 
     private fun checkAnswer(answerIndex: Int, questionType: String) {
+        timerHandler.removeCallbacks(timerRunnable)
         viewModel.checkAnswer(answerIndex) { isCorrect ->
-            resultText.visibility = View.VISIBLE
             if (isCorrect) {
                 scoreGlobal++
-                if (questionType == "Movies") {
-                    score1++
-                    pointText1.text = score1.toString()
-                } else if (questionType == "Events") {
-                    score2++
-                    pointText2.text = score2.toString()
-                } else if (questionType == "Characters"){
-                    score3++
-                    pointText3.text = score3.toString()
+                when (questionType) {
+                    "Movies" -> {
+                        score1++
+                        pointText1.text = score1.toString()
+                    }
+                    "Events" -> {
+                        score2++
+                        pointText2.text = score2.toString()
+                    }
+                    "Characters" -> {
+                        score3++
+                        pointText3.text = score3.toString()
+                    }
                 }
                 resultText.text = "Correct!"
             } else {
@@ -122,12 +133,11 @@ class GameActivity : AppCompatActivity() {
                 pointText3.text = score3.toString()
                 resultText.text = "Incorrect!"
             }
-            viewModel.loadNextQuestion()
             Handler(Looper.getMainLooper()).postDelayed({
-                resultText.visibility = View.INVISIBLE
+                viewModel.loadNextQuestion()
                 if (viewModel.questions.value.isNullOrEmpty()) {
                     showGameOver()
-                } else if (score1 == 1 && score2 == 1 && score3 == 1) {
+                } else if (score1 >= 1 && score2 >= 1 && score3 >= 1) {
                     showGameOver()
                 }
             }, 1500)
@@ -142,6 +152,7 @@ class GameActivity : AppCompatActivity() {
         response2Button.visibility = View.INVISIBLE
         response3Button.visibility = View.INVISIBLE
         response4Button.visibility = View.INVISIBLE
+        resultText.visibility = View.INVISIBLE
         if(score1 == 1 && score2 == 1 && score3 == 1){
             questionText.text = ("You win!\n Your score: $scoreGlobal\n Movies: $score1, Events: $score2,\n Characters: $score3")
         } else {
@@ -153,21 +164,63 @@ class GameActivity : AppCompatActivity() {
 
     private fun replay() {
         viewModel.resetGame()
-        playAgainButton.visibility = View.INVISIBLE
-        manualButton.visibility = View.INVISIBLE
-        pointText1.visibility = View.VISIBLE
-        pointText2.visibility = View.VISIBLE
-        pointText3.visibility = View.VISIBLE
-        response1Button.visibility = View.VISIBLE
-        response2Button.visibility = View.VISIBLE
-        response3Button.visibility = View.VISIBLE
-        response4Button.visibility = View.VISIBLE
         scoreGlobal = 0
         score1 = 0
         score2 = 0
         score3 = 0
-        pointText1.text = score1.toString()
-        pointText2.text = score2.toString()
-        pointText3.text = score3.toString()
+        timeRemaining = 10
+
+        viewModel.questions.observe(this) { questions ->
+            if (questions.isNotEmpty()) {
+                playAgainButton.visibility = View.INVISIBLE
+                manualButton.visibility = View.INVISIBLE
+                pointText1.visibility = View.VISIBLE
+                pointText2.visibility = View.VISIBLE
+                pointText3.visibility = View.VISIBLE
+                response1Button.visibility = View.VISIBLE
+                response2Button.visibility = View.VISIBLE
+                response3Button.visibility = View.VISIBLE
+                response4Button.visibility = View.VISIBLE
+                pointText1.text = score1.toString()
+                pointText2.text = score2.toString()
+                pointText3.text = score3.toString()
+                resultText.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun startTimer() {
+        timerHandler = Handler(Looper.getMainLooper())
+        timerRunnable = object : Runnable {
+            override fun run() {
+                if (timeRemaining > 1) {
+                    timeRemaining--
+                    updateTimerDisplay()
+                    timerHandler.postDelayed(this, 1000)
+                } else {
+                    handleTimeout()
+                }
+            }
+        }
+        timerHandler.postDelayed(timerRunnable, 1000)
+    }
+
+    private fun updateTimerDisplay() {
+        resultText.text = "Time: $timeRemaining"
+    }
+
+    private fun handleTimeout() {
+        resultText.text = "Time's up!"
+        Handler(Looper.getMainLooper()).postDelayed({
+            viewModel.loadNextQuestion()
+            if (viewModel.questions.value.isNullOrEmpty()) {
+                showGameOver()
+            }
+        }, 1000)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        timerHandler.removeCallbacks(timerRunnable)
     }
 }
