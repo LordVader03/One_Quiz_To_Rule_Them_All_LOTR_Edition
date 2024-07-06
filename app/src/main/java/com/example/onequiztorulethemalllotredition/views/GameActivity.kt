@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
+import android.media.MediaPlayer
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -19,6 +20,7 @@ import coil.load
 import com.example.onequiztorulethemalllotredition.R
 import com.example.onequiztorulethemalllotredition.models.Question
 import com.example.onequiztorulethemalllotredition.viewmodels.GameViewModel
+import com.example.onequiztorulethemalllotredition.helpers.MusicManager
 
 class GameActivity : AppCompatActivity() {
 
@@ -34,6 +36,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var timerRunnable: Runnable
 
     private var isFirstLoad = true
+    private var resultPlayer: MediaPlayer? = null
 
     private lateinit var questionText: TextView
     private lateinit var response1Button:Button
@@ -100,6 +103,7 @@ class GameActivity : AppCompatActivity() {
         response4Button.setOnClickListener { checkAnswer(3, viewModel.questions.value?.first()!!.questionType) }
         playAgainButton.setOnClickListener { replay() }
         manualButton.setOnClickListener {
+            MusicManager.pause()
             val i = Intent(this, ManualActivity::class.java)
             startActivity(i)
         }
@@ -109,6 +113,8 @@ class GameActivity : AppCompatActivity() {
         if (isFirstLoad) {
             questionText.text = "Are you ready for the challenge?"
             questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.awaiting))
+            MusicManager.initialize(this, R.raw.awaiting)
+            MusicManager.play()
         }
         questionImg.load(question.imageUrl) {
             listener(
@@ -173,12 +179,18 @@ class GameActivity : AppCompatActivity() {
                 }
                 resultText.text = "Correct!"
                 questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.correct))
+                resultPlayer?.release()
+                resultPlayer = MediaPlayer.create(this, R.raw.correct)
+                resultPlayer?.start()
             } else {
                 pointText1.text = score1.toString()
                 pointText2.text = score2.toString()
                 pointText3.text = score3.toString()
                 resultText.text = "Incorrect!"
                 questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.incorrect))
+                resultPlayer?.release()
+                resultPlayer = MediaPlayer.create(this, R.raw.incorrect)
+                resultPlayer?.start()
             }
             Handler(Looper.getMainLooper()).postDelayed({
                 viewModel.loadNextQuestion()
@@ -203,9 +215,11 @@ class GameActivity : AppCompatActivity() {
         if(score1 == 1 && score2 == 1 && score3 == 1){
             questionText.text = ("You win!\n Your score: $scoreGlobal\n Movies: $score1, Events: $score2,\n Characters: $score3")
             questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.victory))
+            MusicManager.changeTrack(this, R.raw.victory)
         } else {
             questionText.text = ("You lose!\n Your score: $scoreGlobal\n Movies: $score1, Events: $score2,\n Characters: $score3")
             questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.defeat))
+            MusicManager.changeTrack(this, R.raw.defeat)
         }
         playAgainButton.visibility = View.VISIBLE
         manualButton.visibility = View.VISIBLE
@@ -213,6 +227,7 @@ class GameActivity : AppCompatActivity() {
 
     private fun replay() {
         viewModel.resetGame()
+        MusicManager.release()
         scoreGlobal = 0
         score1 = 0
         score2 = 0
@@ -268,5 +283,7 @@ class GameActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         timerHandler.removeCallbacks(timerRunnable)
+        MusicManager.release()
+        resultPlayer?.release()
     }
 }

@@ -8,11 +8,37 @@
     android:background="#505050"
     tools:context=".views.MainActivity">
 
+    <ImageView
+        android:id="@+id/inicioImg"
+        android:layout_width="303dp"
+        android:layout_height="337dp"
+        android:src="@drawable/inicio"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.317" />
+
+    <TextView
+        android:id="@+id/inicioText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="One Quiz To Rule Them All,\n LOTR Edition"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="32sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.024" />
+
     <Button
         android:id="@+id/playButton"
         android:layout_width="212dp"
         android:layout_height="70dp"
-        android:background="#8D8D8D"
+        android:backgroundTint="#D17F06"
         android:text="PLAY"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -20,13 +46,13 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.416" />
+        app:layout_constraintVertical_bias="0.744" />
 
     <Button
         android:id="@+id/manualButton"
         android:layout_width="212dp"
         android:layout_height="70dp"
-        android:background="#8D8D8D"
+        android:backgroundTint="#D17F06"
         android:text="MANUAL"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -34,6 +60,6 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.588" />
+        app:layout_constraintVertical_bias="0.916" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
