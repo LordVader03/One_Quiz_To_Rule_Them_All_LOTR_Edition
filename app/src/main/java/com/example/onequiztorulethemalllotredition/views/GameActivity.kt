@@ -10,9 +10,12 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
+import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import coil.load
 import com.example.onequiztorulethemalllotredition.R
 import com.example.onequiztorulethemalllotredition.models.Question
 import com.example.onequiztorulethemalllotredition.viewmodels.GameViewModel
@@ -30,6 +33,8 @@ class GameActivity : AppCompatActivity() {
     private lateinit var timerHandler: Handler
     private lateinit var timerRunnable: Runnable
 
+    private var isFirstLoad = true
+
     private lateinit var questionText: TextView
     private lateinit var response1Button:Button
     private lateinit var response2Button:Button
@@ -41,6 +46,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var pointText2: TextView
     private lateinit var pointText3: TextView
     private lateinit var resultText: TextView
+    private lateinit var questionImg: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,11 +70,26 @@ class GameActivity : AppCompatActivity() {
         pointText2 = findViewById(R.id.pointMarker2Text)
         pointText3 = findViewById(R.id.pointMarker3Text)
         resultText = findViewById(R.id.resultText)
+        questionImg = findViewById(R.id.questionImg)
+
+        response1Button.visibility = View.INVISIBLE
+        response2Button.visibility = View.INVISIBLE
+        response3Button.visibility = View.INVISIBLE
+        response4Button.visibility = View.INVISIBLE
+        resultText.visibility = View.INVISIBLE
+        playAgainButton.visibility = View.INVISIBLE
+        manualButton.visibility = View.INVISIBLE
+        pointText1.visibility = View.INVISIBLE
+        pointText2.visibility = View.INVISIBLE
+        pointText3.visibility = View.INVISIBLE
+
+        if (isFirstLoad) {
+            questionText.text = "Are you ready for the challenge?"
+            questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.awaiting))
+        }
 
         viewModel.questions.observe(this) { questions ->
             if (questions.isNotEmpty()) {
-                playAgainButton.visibility = View.INVISIBLE
-                manualButton.visibility = View.INVISIBLE
                 displayQuestion(questions.first())
             }
         }
@@ -85,26 +106,50 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun displayQuestion(question: Question) {
-        questionText.text = question.question
-        response1Button.text = question.answerList[0].answer
-        response2Button.text = question.answerList[1].answer
-        response3Button.text = question.answerList[2].answer
-        response4Button.text = question.answerList[3].answer
-        val buttonColor = when (question.questionType) {
-            "Movies" -> "#FF6400"
-            "Events" -> "#00C850"
-            "Characters" -> "#0064FF"
-            else -> null
+        if (isFirstLoad) {
+            questionText.text = "Are you ready for the challenge?"
+            questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.awaiting))
         }
-        if (buttonColor != null) {
-            response1Button.setBackgroundColor(Color.parseColor(buttonColor))
-            response2Button.setBackgroundColor(Color.parseColor(buttonColor))
-            response3Button.setBackgroundColor(Color.parseColor(buttonColor))
-            response4Button.setBackgroundColor(Color.parseColor(buttonColor))
+        questionImg.load(question.imageUrl) {
+            listener(
+                onSuccess = { _, _ ->
+                    if (isFirstLoad) {
+                        response1Button.visibility = View.VISIBLE
+                        response2Button.visibility = View.VISIBLE
+                        response3Button.visibility = View.VISIBLE
+                        response4Button.visibility = View.VISIBLE
+                        questionImg.visibility = View.VISIBLE
+                        resultText.visibility = View.VISIBLE
+                    }
+                    questionText.text = question.question
+                    response1Button.text = question.answerList[0].answer
+                    response2Button.text = question.answerList[1].answer
+                    response3Button.text = question.answerList[2].answer
+                    response4Button.text = question.answerList[3].answer
+
+                    val buttonColor = when (question.questionType) {
+                        "Movies" -> "#FF6400"
+                        "Events" -> "#00C850"
+                        "Characters" -> "#0064FF"
+                        else -> null
+                    }
+                    buttonColor?.let {
+                        response1Button.setBackgroundColor(Color.parseColor(it))
+                        response2Button.setBackgroundColor(Color.parseColor(it))
+                        response3Button.setBackgroundColor(Color.parseColor(it))
+                        response4Button.setBackgroundColor(Color.parseColor(it))
+                    }
+
+                    isFirstLoad = false
+
+                    timeRemaining = 10
+                    startTimer()
+                    updateTimerDisplay()
+                },
+                onError = { _, throwable ->
+                }
+            )
         }
-        timeRemaining = 10
-        startTimer()
-        updateTimerDisplay()
     }
 
     private fun checkAnswer(answerIndex: Int, questionType: String) {
@@ -127,11 +172,13 @@ class GameActivity : AppCompatActivity() {
                     }
                 }
                 resultText.text = "Correct!"
+                questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.correct))
             } else {
                 pointText1.text = score1.toString()
                 pointText2.text = score2.toString()
                 pointText3.text = score3.toString()
                 resultText.text = "Incorrect!"
+                questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.incorrect))
             }
             Handler(Looper.getMainLooper()).postDelayed({
                 viewModel.loadNextQuestion()
@@ -155,8 +202,10 @@ class GameActivity : AppCompatActivity() {
         resultText.visibility = View.INVISIBLE
         if(score1 == 1 && score2 == 1 && score3 == 1){
             questionText.text = ("You win!\n Your score: $scoreGlobal\n Movies: $score1, Events: $score2,\n Characters: $score3")
+            questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.victory))
         } else {
             questionText.text = ("You lose!\n Your score: $scoreGlobal\n Movies: $score1, Events: $score2,\n Characters: $score3")
+            questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.defeat))
         }
         playAgainButton.visibility = View.VISIBLE
         manualButton.visibility = View.VISIBLE
@@ -169,6 +218,7 @@ class GameActivity : AppCompatActivity() {
         score2 = 0
         score3 = 0
         timeRemaining = 10
+        isFirstLoad = true
 
         viewModel.questions.observe(this) { questions ->
             if (questions.isNotEmpty()) {
@@ -177,10 +227,6 @@ class GameActivity : AppCompatActivity() {
                 pointText1.visibility = View.VISIBLE
                 pointText2.visibility = View.VISIBLE
                 pointText3.visibility = View.VISIBLE
-                response1Button.visibility = View.VISIBLE
-                response2Button.visibility = View.VISIBLE
-                response3Button.visibility = View.VISIBLE
-                response4Button.visibility = View.VISIBLE
                 pointText1.text = score1.toString()
                 pointText2.text = score2.toString()
                 pointText3.text = score3.toString()

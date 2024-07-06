@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "349185597500",
+    "firebase_url": "https://oqtrtalotred-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "oqtrtalotred",
+    "storage_bucket": "oqtrtalotred.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:349185597500:android:c79db28da23512183ba339",
+        "android_client_info": {
+          "package_name": "com.example.onequiztorulethemalllotredition"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrwutVunFuIhAPOqsC-_wJyEeNkpcz76E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
