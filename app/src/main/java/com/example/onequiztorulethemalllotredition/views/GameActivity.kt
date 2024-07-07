@@ -126,6 +126,9 @@ class GameActivity : AppCompatActivity() {
                         response4Button.visibility = View.VISIBLE
                         questionImg.visibility = View.VISIBLE
                         resultText.visibility = View.VISIBLE
+                        pointText1.visibility = View.VISIBLE
+                        pointText2.visibility = View.VISIBLE
+                        pointText3.visibility = View.VISIBLE
                     }
                     questionText.text = question.question
                     response1Button.text = question.answerList[0].answer

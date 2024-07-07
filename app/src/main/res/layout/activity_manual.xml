@@ -41,7 +41,7 @@
         android:layout_width="353dp"
         android:layout_height="76dp"
         android:layout_marginTop="8dp"
-        android:text="The objective is simple: answer correctly at least one questo of each type to win."
+        android:text="The objective is simple: answer correctly at least one quest of each type to win."
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
