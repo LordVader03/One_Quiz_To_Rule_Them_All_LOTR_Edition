@@ -275,6 +275,10 @@ class GameActivity : AppCompatActivity() {
 
     private fun handleTimeout() {
         resultText.text = "Time's up!"
+        questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.incorrect))
+        resultPlayer?.release()
+        resultPlayer = MediaPlayer.create(this, R.raw.incorrect)
+        resultPlayer?.start()
         Handler(Looper.getMainLooper()).postDelayed({
             viewModel.loadNextQuestion()
             if (viewModel.questions.value.isNullOrEmpty()) {
