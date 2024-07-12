@@ -37,6 +37,7 @@ class GameActivity : AppCompatActivity() {
 
     private var isFirstLoad = true
     private var resultPlayer: MediaPlayer? = null
+    private var isGameOver = false
 
     private lateinit var questionText: TextView
     private lateinit var response1Button:Button
@@ -110,6 +111,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun displayQuestion(question: Question) {
+        if (isGameOver) return
         if (isFirstLoad) {
             questionText.text = "Are you ready for the challenge?"
             questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.awaiting))
@@ -132,9 +134,13 @@ class GameActivity : AppCompatActivity() {
                     }
                     questionText.text = question.question
                     response1Button.text = question.answerList[0].answer
+                    adjustTextSize(response1Button)
                     response2Button.text = question.answerList[1].answer
+                    adjustTextSize(response2Button)
                     response3Button.text = question.answerList[2].answer
+                    adjustTextSize(response3Button)
                     response4Button.text = question.answerList[3].answer
+                    adjustTextSize(response4Button)
 
                     val buttonColor = when (question.questionType) {
                         "Movies" -> "#FF6400"
@@ -162,6 +168,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun checkAnswer(answerIndex: Int, questionType: String) {
+        if (isGameOver) return
         timerHandler.removeCallbacks(timerRunnable)
         viewModel.checkAnswer(answerIndex) { isCorrect ->
             if (isCorrect) {
@@ -196,8 +203,12 @@ class GameActivity : AppCompatActivity() {
                 resultPlayer?.start()
             }
             Handler(Looper.getMainLooper()).postDelayed({
+                if (score1 >= 1 && score2 >= 1 && score3 >= 1) {
+                    isGameOver = true
+                }
                 viewModel.loadNextQuestion()
                 if (viewModel.questions.value.isNullOrEmpty()) {
+                    isGameOver = true
                     showGameOver()
                 } else if (score1 >= 1 && score2 >= 1 && score3 >= 1) {
                     showGameOver()
@@ -215,7 +226,9 @@ class GameActivity : AppCompatActivity() {
         response3Button.visibility = View.INVISIBLE
         response4Button.visibility = View.INVISIBLE
         resultText.visibility = View.INVISIBLE
-        if(score1 == 1 && score2 == 1 && score3 == 1){
+        playAgainButton.visibility = View.VISIBLE
+        manualButton.visibility = View.VISIBLE
+        if(score1 >= 1 && score2 >= 1 && score3 >= 1){
             questionText.text = ("You win!\n Your score: $scoreGlobal\n Movies: $score1, Events: $score2,\n Characters: $score3")
             questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.victory))
             MusicManager.changeTrack(this, R.raw.victory)
@@ -224,12 +237,11 @@ class GameActivity : AppCompatActivity() {
             questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.defeat))
             MusicManager.changeTrack(this, R.raw.defeat)
         }
-        playAgainButton.visibility = View.VISIBLE
-        manualButton.visibility = View.VISIBLE
     }
 
     private fun replay() {
         viewModel.resetGame()
+
         MusicManager.release()
         scoreGlobal = 0
         score1 = 0
@@ -237,23 +249,23 @@ class GameActivity : AppCompatActivity() {
         score3 = 0
         timeRemaining = 10
         isFirstLoad = true
+        isGameOver = false
 
-        viewModel.questions.observe(this) { questions ->
-            if (questions.isNotEmpty()) {
-                playAgainButton.visibility = View.INVISIBLE
-                manualButton.visibility = View.INVISIBLE
-                pointText1.visibility = View.VISIBLE
-                pointText2.visibility = View.VISIBLE
-                pointText3.visibility = View.VISIBLE
-                pointText1.text = score1.toString()
-                pointText2.text = score2.toString()
-                pointText3.text = score3.toString()
-                resultText.visibility = View.VISIBLE
-            }
-        }
+        playAgainButton.visibility = View.INVISIBLE
+        manualButton.visibility = View.INVISIBLE
+        pointText1.visibility = View.VISIBLE
+        pointText2.visibility = View.VISIBLE
+        pointText3.visibility = View.VISIBLE
+        pointText1.text = score1.toString()
+        pointText2.text = score2.toString()
+        pointText3.text = score3.toString()
+        resultText.visibility = View.VISIBLE
     }
 
     private fun startTimer() {
+        if (this::timerHandler.isInitialized) {
+            timerHandler.removeCallbacks(timerRunnable)
+        }
         timerHandler = Handler(Looper.getMainLooper())
         timerRunnable = object : Runnable {
             override fun run() {
@@ -274,6 +286,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun handleTimeout() {
+        if (isGameOver) return
         resultText.text = "Time's up!"
         questionImg.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.incorrect))
         resultPlayer?.release()
@@ -282,6 +295,7 @@ class GameActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             viewModel.loadNextQuestion()
             if (viewModel.questions.value.isNullOrEmpty()) {
+                isGameOver = true
                 showGameOver()
             }
         }, 1000)
@@ -292,5 +306,17 @@ class GameActivity : AppCompatActivity() {
         timerHandler.removeCallbacks(timerRunnable)
         MusicManager.release()
         resultPlayer?.release()
+    }
+
+    private fun adjustTextSize(textView: TextView) {
+        val textLength = textView.text.length
+
+        val textSize = when {
+            textLength < 15 -> 34f
+            textLength < 30 -> 21f
+            else -> 14f
+        }
+
+        textView.textSize = textSize
     }
 }
